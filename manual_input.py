@@ -1,6 +1,15 @@
-# Ввод массива вручную через пробел
+# ручной ввода массивов
+def manual_input():
+    size = int(input("Введите размер массивов: "))
 
-def input_array_manual() -> list[int]:
-    raw = input("Введите числа через пробел: ")
-    return [int(x) for x in raw.split()]
+    print("Введите элементы первого массива через пробел:")
+    arr1 = list(map(int, input().split()))
+
+    print("Введите элементы второго массива через пробел:")
+    arr2 = list(map(int, input().split()))
+
+    if len(arr1) != size or len(arr2) != size:          # Проверка размера
+        raise ValueError(f"Ошибка: нужно ввести {size} чисел, а введено {len(arr1)} и {len(arr2)}")
+
+    return arr1, arr2
 
