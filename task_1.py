@@ -1,8 +1,11 @@
 import random
 from logger import logger
+from messages import Messages
+from exceptions import InputError, InvalidValueError, DataNotSetError, OperationError, AppError
+
 
 # Генерирует массив случайных чисел
-def generate_array(size: int, min_v: int, max_v: int) -> list[int]:
+def generate_array(size: int, min_v: int = 0, max_v: int = 50) -> list[int]: # аннотация возвращаемого значения
     """
     Генерирует массив случайных целых чисел.
 
@@ -17,14 +20,9 @@ def generate_array(size: int, min_v: int, max_v: int) -> list[int]:
 
     # случайное целое число из промежутка min_v, max_v
     logger.info("Генерация случайного массива")
-    try:
-        if size <= 0:
-            raise ValueError("Размер массива должен быть положительным числом")    # искусственно вызванная ошибка
-        return [random.randint(min_v, max_v) for _ in range(size)]
-    except Exception as e:                                  # сохраняет объект ошибки в переменной e
-        logger.error(f"Ошибка генерации массива: {e}")      # лог с уровнем ERROR
-        print("Ошибка генерации массива:", e)               # сообщение, не прерывая выполнение программы.
-        return []                                           # пустой список
+    if size <= 0:
+        raise InvalidValueError("Размер массива должен быть положительным") # некорректные значения
+    return [random.randint(min_v, max_v) for _ in range(size)]
 
 
 # Ввод массива вручную через пробел
@@ -40,20 +38,13 @@ def input_array_manual() -> list[int]:
     """
 
     logger.info("Ввод массива вручную")
+    raw = input("Введите числа через пробел: ")
+    if not raw.strip():
+        raise InputError("Пустой ввод")  # Ошибка ввода пользователем.
     try:
-        raw = input("Введите числа через пробел: ")
-        arr = [int(x) for x in raw.split()]
-        if not arr:
-            raise ValueError("Массив не может быть пустым")
-        return arr
-    except ValueError as ve:  # исключения типа ValueError(данные нельзя преобразовать в целые, кол-во не соотв ожидаемым)
-        logger.error(f"Ошибка ввода: {ve}")   # лог с уровнем ERROR
-        print("Ошибка ввода:", ve)
-        return []
-    except Exception as e:    # любые другие исключения
-        logger.error(f"Неизвестная ошибка ввода: {e}")
-        print("Произошла ошибка:", e)
-        return []
+        return [int(x) for x in raw.split()]
+    except ValueError:
+        raise InputError("Введены нецелые числа") # Ошибка ввода пользователем.
 
 
 # Возвращает число, записанное в обратном порядке цифр
@@ -68,18 +59,52 @@ def reverse_number(n: int) -> int:
         :return: число с перевернутым порядком цифр.
     """
 
-    # logger.info("Переворот числа")
+    result = int(str(n)[::-1])
+    logger.debug(f"reverse_number: {n} -> {result}")   # вспомогательная функция, не засоряет лог
+    return result
+
+
+# количество общих чисел в двух массивах
+def count_common_and_reversed(arr1: list[int], arr2: list[int]) -> int:
+    """
+    Подсчитывает количество общих чисел между двумя массивами,
+    учитывая также перевёрнутые значения.
+
+    Каждая пара чисел учитывается только один раз,
+    даже если такие значения встречаются несколько раз в массивах.
+
+    :param arr1: первый массив целых чисел
+    :param arr2: второй массив целых чисел
+    :return: количество уникальных общих чисел между массивами
+
+    :raises EmptyArrayError:
+        если один или оба массива пустые
+    :raises OperationError:
+        если возникает ошибка при выполнении подсчёта
+    """
+
+    if not arr1 or not arr2:
+        raise DataNotSetError("Массивы не заданы или пусты") # Ошибка при попытке работы с данными, которые ещё не заданы
+
+    count = 0
+    used_pairs = []
+
     try:
-        s = str(n)
-        return int(s[::-1])
+        for a in arr1:
+            for b in arr2:
+                if a == b or a == reverse_number(b) or reverse_number(a) == b:
+                    pair = (min(a, b), max(a, b))
+                    if pair not in used_pairs:
+                        used_pairs.append(pair)
+                        count += 1
     except Exception as e:
-        logger.error(f"Ошибка переворота числа {n}: {e}") # лог с уровнем ERROR
-        print("Ошибка переворота числа:", e)
-        return n
+        raise OperationError(f"Ошибка выполнения подсчёта: {e}") from e  # Ошибка выполнения операции.
+
+    return count
 
 
-# меню для задания 1
-def task_1_menu():
+# меню для задания 1: общие числа в двух массивах
+def task_1_menu() -> None:
     """
     Задача 1.
 
@@ -111,18 +136,15 @@ def task_1_menu():
     arr1 = None
     arr2 = None
     result = None
+    msgs = Messages.TASK1 # Сохраняет ссылку на класс из файла messages.py
 
     while True:
-        print("\n=====ЗАДАНИЕ 1======")
-        print("1. Ввести массивы вручную")
-        print("2. Сгенерировать массивы случайно")
-        print("3. Посчитать общие и перевёрнутые числа")
-        print("4. Показать результат")
-        print("5. Назад в главное меню")
-        print("6. Отключить логирование (CRITICAL)")
+        print("\n" + msgs.title) # вывод заголовка меню
+        for option in msgs.menu: # вывод всех пунктов меню, msgs.menu — список строк с пунктами меню
+            print(option)
 
-        choice = input("Выберите пункт: ")
-        logger.info(f"Пользователь выбрал пункт меню task_1: {choice}")
+        choice = input(msgs.prompt)   # msgs.prompt — строка с приглашением "Выберите пункт: "
+        logger.info(f"task1: выбран пункт {choice}")
 
         # ввод вручную
         if choice == "1":
@@ -131,13 +153,11 @@ def task_1_menu():
                 arr1 = input_array_manual()
                 print("Второй массив:")
                 arr2 = input_array_manual()
-                if not arr1 or not arr2:
-                    raise RuntimeError("Ввод массивов не удался")
                 result = None
                 logger.info("Массивы введены вручную")
-            except Exception as e:
-                logger.error(f"Ошибка ручного ввода: {e}")
-                print("Ошибка ручного ввода:", e)
+            except AppError as e:
+                logger.error(str(e))
+                print(msgs.input_error)
 
 
         # генерация массивов
@@ -145,51 +165,38 @@ def task_1_menu():
             try:
                 size1 = int(input("Размер первого массива: "))
                 size2 = int(input("Размер второго массива: "))
-                arr1 = generate_array(size1, 0, 100)
-                arr2 = generate_array(size2, 0, 100)
-                if not arr1 or not arr2:
-                    raise RuntimeError("Генерация массивов не удалась")
+                arr1 = generate_array(size1)
+                arr2 = generate_array(size2)
                 print("Первый массив:", arr1)
                 print("Второй массив:", arr2)
                 result = None
-                logger.info("Массивы сгенерированы автоматически")
-            except Exception as e:
-                logger.error(f"Ошибка генерации массивов: {e}")
-                print("Ошибка генерации массивов:", e)
+                logger.info("Массивы сгенерированы случайно")
+            except AppError as e:
+                logger.error(str(e))
+                print(msgs.input_error)
 
 
         # вычисление
         elif choice == "3":
             try:
                 if arr1 is None or arr2 is None:
-                    raise RuntimeError("Сначала введите или сгенерируйте массивы")
-                count = 0
-                used_pairs = []
-                for a in arr1:
-                    for b in arr2:
-                        if (a == b) or (a == reverse_number(b)) or (reverse_number(a) == b):
-                            pair = (min(a, b), max(a, b))
-                            if pair not in used_pairs:
-                                used_pairs.append(pair)
-                                count += 1
-                result = count
-                print("Подсчёт выполнен")
+                    raise DataNotSetError("Массивы не заданы")
+
+                result = count_common_and_reversed(arr1, arr2)
+                msgs = Messages.TASK1
                 logger.info("Подсчёт выполнен")
-            except Exception as e:
-                logger.error(f"Ошибка подсчёта: {e}")
-                print("Ошибка подсчёта:", e)
+            except AppError as e:
+                logger.error(str(e))
+                print(msgs.no_data)
 
 
         # вывод результата
         elif choice == "4":
-            try:
-                if result is None:
-                    raise RuntimeError("Нет результата для вывода")
-                print(f"Общее количество одинаковых чисел: {result}")
-                logger.info("Результат выведен")
-            except Exception as e:
-                logger.error(f"Ошибка вывода результата: {e}")
-                print("Ошибка вывода результата:", e)
+            if result is None:
+                print(msgs.no_data)
+            else:
+                print(f"Результат: {result}")
+                logger.info("Результат показан")
 
         # выход в главное меню
         elif choice == "5":
@@ -203,8 +210,8 @@ def task_1_menu():
             logger.critical("Установлен уровень CRITICAL")
 
         else:
-            print("Неверный пункт.")
-            logger.info("Неверный пункт меню")
+            print(msgs.invalid_choice)
+            logger.info("Неверный пункт меню task1")
 
 
 # ГЛАВНОЕ МЕНЮ

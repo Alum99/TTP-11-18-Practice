@@ -1,8 +1,10 @@
 import random
 from logger import logger
+from messages import Messages
+from exceptions import InvalidValueError, InputError, OperationError, AppError
 
 # генерация случайных массивов с обработкой ошибок
-def random_array(size, min_val=0, max_val=50):
+def random_array(size: int, min_val: int = 0, max_val: int = 50) -> tuple[list[int], list[int]]: # аннотация возвращаемого значения
     """
     Генерирует два массива случайных целых чисел одинакового размера.
 
@@ -13,24 +15,21 @@ def random_array(size, min_val=0, max_val=50):
 
     Возвращает:
         :return:  кортеж из двух массивов (arr1, arr2)
+
+    :raises InvalidValueError: если size <= 0
     """
 
-    logger.info("Генерация случайного массива")
-    try:
-        if size <= 0:
-            raise ValueError("Размер массива должен быть положительным числом")
-        arr1 = [random.randint(min_val, max_val) for _ in range(size)]
-        arr2 = [random.randint(min_val, max_val) for _ in range(size)]
-        return arr1, arr2
+    logger.info("Генерация случайных массивов")
+    if size <= 0:
+        raise InvalidValueError("Размер массива должен быть положительным")
 
-    except Exception as e:
-        logger.error(f"Ошибка генерации массива: {e}")
-        print("Ошибка генерации массива:", e)
-        return [], []
+    arr1 = [random.randint(min_val, max_val) for _ in range(size)]
+    arr2 = [random.randint(min_val, max_val) for _ in range(size)]
+    return arr1, arr2
 
 
 # ручной ввода массивов с обработкой ошибок
-def manual_input():
+def manual_input() -> tuple[list[int], list[int]]:
     """
     Выполняет ручной ввод двух массивов одинакового размера.
 
@@ -42,36 +41,30 @@ def manual_input():
         :return:  кортеж из двух массивов (arr1, arr2)
 
     Ошибки:
-        :raises ValueError: если количество введённых чисел не совпадает с размером массивов
+        :raises InputError: если ввод некорректен
     """
 
-    logger.info("Ввод массива вручную")
+    logger.info("Ручной ввод массивов")
     try:
         size = int(input("Введите размер массивов: "))
         if size <= 0:
-            raise ValueError("Размер массива должен быть положительным числом")
+            raise InvalidValueError("Размер массива должен быть положительным")
 
-        arr1 = list(map(int, input("Введите элементы первого массива через пробел: ").split()))
-        arr2 = list(map(int, input("Введите элементы второго массива через пробел: ").split()))
+        arr1 = [int(x) for x in input("Введите первый массив: ").split()]
+        arr2 = [int(x) for x in input("Введите второй массив: ").split()]
 
-        if len(arr1) != size or len(arr2) != size:          # Проверка размера
-            raise ValueError(f"Ошибка: нужно ввести {size} чисел, а введено {len(arr1)} и {len(arr2)}")
-
+        if len(arr1) != size or len(arr2) != size:
+            raise InputError(
+                f"Ожидалось {size} элементов, получено {len(arr1)} и {len(arr2)}"
+            )
         return arr1, arr2
 
-    except ValueError as ve:
-        logger.error(f"Ошибка ввода: {ve}")
-        print("Ошибка ввода:", ve)
-        return [], []
-
-    except Exception as e:
-        logger.error(f"Неизвестная ошибка ввода: {e}")
-        print("Произошла ошибка:", e)
-        return [], []
+    except ValueError:
+        raise InputError("Введены нецелые числа")
 
 
 # сортировка массивов по условиям
-def sort_arrays(arr1, arr2):
+def sort_arrays(arr1: list[int], arr2: list[int]) -> tuple[list[int], list[int]]:
     """
     Сортирует два массива по заданным условиям.
 
@@ -86,19 +79,12 @@ def sort_arrays(arr1, arr2):
         :return: кортеж из отсортированных массивов (arr1_sorted, arr2_sorted)
     """
 
-    logger.info("Сортировка массивов по условию")
-    try:
-        arr1_sorted = sorted(arr1, reverse=True)   # убывание
-        arr2_sorted = sorted(arr2)                 # возрастание
-        return arr1_sorted, arr2_sorted
-    except Exception as e:
-        logger.error(f"Ошибка сортировки: {e}")
-        print("Ошибка сортировки массивов:", e)
-        return [], []
+    logger.info("Сортировка массивов")
+    return sorted(arr1, reverse=True), sorted(arr2)
 
 
 # правило сложения массивов
-def sum_arrays(arr1, arr2):
+def sum_arrays(arr1: list[int], arr2: list[int]) -> list[int]:
     """
     Выполняет поэлементное сложение двух массивов.
 
@@ -112,22 +98,18 @@ def sum_arrays(arr1, arr2):
 
     Возвращает:
         :return: массив результатов сложения
+
+    :raises OperationError: если размеры массивов различаются
     """
 
-    logger.info("Сложение двух массивов по условию")
-    try:
-        if len(arr1) != len(arr2):
-            raise ValueError("Массивы должны быть одинакового размера для сложения")
-        result = [0 if a == b else a + b for a, b in zip(arr1, arr2)]
-        return result # итог НЕ по возрастанию
-    except Exception as e:
-        logger.error(f"Ошибка сложения массивов: {e}")
-        print("Ошибка сложения массивов:", e)
-        return []
+    logger.info("Сложение массивов")
+    if len(arr1) != len(arr2):
+        raise OperationError("Массивы должны быть одинаковой длины")
+    return [0 if a == b else a + b for a, b in zip(arr1, arr2)]
 
 
-# меню для 3 задания с обработкой ошибок
-def task_3_menu():
+# меню для 3 задания с обработкой ошибо
+def task_3_menu() -> None:
     """
     Меню задачи 3:
 
@@ -154,56 +136,55 @@ def task_3_menu():
     :return: функция завершает работу при выборе выхода в главное меню.
     """
 
-    arr1 = arr2 = arr1_sorted = arr2_sorted = result = None
-    
-    while True:
-        print("\n===== ЗАДАНИЕ 3 =====")
-        print("1. Ввести массивы вручную")
-        print("2. Сгенерировать массивы случайно")
-        print("3. Показать массивы и результат")
-        print("4. Назад в главное меню")
-        print("5. Отключить логирование (CRITICAL)")
+    arr1: list[int] | None = None
+    arr2: list[int] | None = None
+    arr1_sorted: list[int] | None = None
+    arr2_sorted: list[int] | None = None
+    result: list[int] | None = None
+    msgs = Messages.TASK3
 
-        choice = input("Выберите пункт: ")
-        logger.info(f"Пользователь выбрал пункт меню task_3: {choice}")
+    while True:
+        print("\n" + msgs.title)
+        for option in msgs.menu:
+            print(option)
+
+        choice = input(msgs.prompt)
+        logger.info(f"task3: выбран пункт {choice}")
 
         # ручной ввод и преобразования
         if choice == "1":
-            arr1, arr2 = manual_input()
-            if arr1 and arr2:
+            try:
+                arr1, arr2 = manual_input()
                 arr1_sorted, arr2_sorted = sort_arrays(arr1, arr2)
                 result = sum_arrays(arr1_sorted, arr2_sorted)
-                print("\nМассивы введены и обработаны.")
-                logger.info("Массив введен вручную и преобразован")
+                logger.info("Массивы введены вручную и обработаны")
+            except AppError as e:
+                logger.error(str(e))
+                print(msgs.input_error)
 
         # генерация случайных массивов
         elif choice == "2":
             try:
                 size = int(input("Введите размер массивов: "))
                 arr1, arr2 = random_array(size)
-                if arr1 and arr2:
-                    arr1_sorted, arr2_sorted = sort_arrays(arr1, arr2)
-                    result = sum_arrays(arr1_sorted, arr2_sorted)
-                    print("\nМассивы сгенерированы и обработаны.")
-                    logger.info("Массивы сгенерированы автоматически")
-            except Exception as e:
-                logger.error(f"Ошибка генерации массивов: {e}")
-                print("Ошибка генерации массивов:", e)
+                arr1_sorted, arr2_sorted = sort_arrays(arr1, arr2)
+                result = sum_arrays(arr1_sorted, arr2_sorted)
+                logger.info("Массивы сгенерированы и обработаны")
+            except (ValueError, AppError) as e:
+                logger.error(str(e))
+                print(msgs.input_error)
 
         # результат и вывод
         elif choice == "3":
-            try:
-                if arr1 is None or arr2 is None:
-                    raise RuntimeError("Массивы ещё не введены или не сгенерированы")
-                print("\nПервый массив:", arr1)
+            if arr1 is None or result is None:
+                print(msgs.no_data)
+            else:
+                print("Первый массив:", arr1)
                 print("Второй массив:", arr2)
-                print("Первый массив отсортированный:", arr1_sorted)
-                print("Второй массив отсортированный:", arr2_sorted)
-                print("Результат сложения:", sorted(result))
-                logger.info("Вывод массивов и результата успешен")
-            except Exception as e:
-                logger.error(f"Ошибка при выводе: {e}")
-                print("Ошибка:", e)
+                print("Первый (убывание):", arr1_sorted)
+                print("Второй (возрастание):", arr2_sorted)
+                print("Результат:", sorted(result))
+                logger.info("Результаты выведены")
 
         # выход в главное меню
         elif choice == "4":
@@ -217,9 +198,8 @@ def task_3_menu():
             logger.critical("Установлен уровень CRITICAL")
 
         else:
-            print("Неверный выбор!")
-            logger.info("Неверный пункт меню")
-
+            print(msgs.invalid_choice)
+            logger.info("Неверный пункт меню task3")
 
 # ГЛАВНОЕ МЕНЮ 
 
