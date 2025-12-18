@@ -21,7 +21,7 @@ def generate_array(size: int, min_v: int, max_v: int) -> list[int]:
         if size <= 0:
             raise ValueError("Размер массива должен быть положительным числом")    # искусственно вызванная ошибка
         return [random.randint(min_v, max_v) for _ in range(size)]
-    except Exception as e:                                  # сохраняет объект ошибки в переменной e
+    except Exception as e:                                  # сохраняет объект ошибки в переменной e, базовый класс почти всех ошибок в Python
         logger.error(f"Ошибка генерации массива: {e}")      # лог с уровнем ERROR
         print("Ошибка генерации массива:", e)               # сообщение, не прерывая выполнение программы.
         return []                                           # пустой список
@@ -42,14 +42,14 @@ def input_array_manual() -> list[int]:
     logger.info("Ввод массива вручную")
     try:
         raw = input("Введите числа через пробел: ")
-        arr = [int(x) for x in raw.split()]
-        if not arr:
+        arr = [int(x) for x in raw.split()]   # преобразование строки в список
+        if not arr:    # если массив пуст
             raise ValueError("Массив не может быть пустым")
-        return arr
-    except ValueError as ve:  # исключения типа ValueError(данные нельзя преобразовать в целые, кол-во не соотв ожидаемым)
+        return arr     # возвращает конктетный массив чисел
+    except ValueError as ve:  # перехват исключения типа ValueError(данные нельзя преобразовать в целые, кол-во не соотв ожидаемым)
         logger.error(f"Ошибка ввода: {ve}")   # лог с уровнем ERROR
         print("Ошибка ввода:", ve)
-        return []
+        return []      # возвращает пустой список
     except Exception as e:    # любые другие исключения
         logger.error(f"Неизвестная ошибка ввода: {e}")
         print("Произошла ошибка:", e)
@@ -70,12 +70,12 @@ def reverse_number(n: int) -> int:
 
     # logger.info("Переворот числа")
     try:
-        s = str(n)
-        return int(s[::-1])
-    except Exception as e:
+        s = str(n)  # число в строку
+        return int(s[::-1])  # переворот
+    except Exception as e:   # Перехватывает любое исключение
         logger.error(f"Ошибка переворота числа {n}: {e}") # лог с уровнем ERROR
-        print("Ошибка переворота числа:", e)
-        return n
+        print("Ошибка переворота числа:", e) # сообщение в консоль
+        return n # если переворот невозможен, то возвращается исходное число
 
 
 # меню для задания 1: общие числа в двух массивах
@@ -131,11 +131,11 @@ def task_1_menu():
                 arr1 = input_array_manual()
                 print("Второй массив:")
                 arr2 = input_array_manual()
-                if not arr1 or not arr2:
-                    raise RuntimeError("Ввод массивов не удался")
+                if not arr1 or not arr2:     # если массив пустой
+                    raise RuntimeError("Ввод массивов не удался") # генерируется исключение
                 result = None
                 logger.info("Массивы введены вручную")
-            except Exception as e:
+            except Exception as e:     # любая другая ошибка
                 logger.error(f"Ошибка ручного ввода: {e}")
                 print("Ошибка ручного ввода:", e)
 
@@ -161,15 +161,15 @@ def task_1_menu():
         # вычисление
         elif choice == "3":
             try:
-                if arr1 is None or arr2 is None:
+                if arr1 is None or arr2 is None:     # нельзя считать если массивов нет
                     raise RuntimeError("Сначала введите или сгенерируйте массивы")
                 count = 0
                 used_pairs = []
                 for a in arr1:
                     for b in arr2:
-                        if (a == b) or (a == reverse_number(b)) or (reverse_number(a) == b):
+                        if (a == b) or (a == reverse_number(b)) or (reverse_number(a) == b): # условие совпадения
                             pair = (min(a, b), max(a, b))
-                            if pair not in used_pairs:
+                            if pair not in used_pairs: # без повторного подсчета одной и той же пары
                                 used_pairs.append(pair)
                                 count += 1
                 result = count
