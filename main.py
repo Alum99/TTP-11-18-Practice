@@ -23,27 +23,36 @@ def main():
     """
 
     while True:
-        print("\nГЛАВНОЕ МЕНЮ")
-        print("1. Задание 1 (Подсчет общих чисел)")
-        print("2. Задание 2 (Поиск индексов при условии)")
-        print("3. Задание 3 (Сложение и сортировка массивов)")
-        print("4. Выход")
+        try:
+            print("\nГЛАВНОЕ МЕНЮ")
+            print("1. Задание 1 (Подсчет общих чисел)")
+            print("2. Задание 2 (Поиск индексов при условии)")
+            print("3. Задание 3 (Сложение и сортировка массивов)")
+            print("4. Выход")
 
-        choice = input("Выберите пункт: ")
-        logger.info(f"Пользователь выбрал главный пункт меню: {choice}")
+            choice = input("Выберите пункт: ")
+            logger.info(f"Пользователь выбрал главный пункт меню: {choice}")
 
-        if choice == "1":
-            task_1_menu()
-        elif choice == "2":
-            task_2_menu()
-        elif choice == "3":
-            task_3_menu()
-        elif choice == "4":
-            print("Выход.")
-            break
-        else:
-            print("Неверный пункт")
-            logger.info("Ошибка: неверный пункт главного меню")
+            if choice == "1":
+                task_1_menu()
+            elif choice == "2":
+                task_2_menu()
+            elif choice == "3":
+                task_3_menu()
+            elif choice == "4":
+                print("Выход.")
+                logger.info("Пользователь завершил программу")
+                break
+            else: # если пользователь ввел неправильный пункт меню
+                raise ValueError("Неверный пункт главного меню")
+
+        except ValueError as ve: # ошибки ввода
+            logger.error(f"Ошибка ввода в главном меню: {ve}")
+            print("Ошибка:", ve)
+
+        except Exception as e: # любой непредвиденной ошибки
+            logger.critical(f"Критическая ошибка в главном меню: {e}")
+            print("Произошла непредвиденная ошибка:", e)
 
 
 if __name__ == "__main__":
