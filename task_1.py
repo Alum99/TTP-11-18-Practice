@@ -2,6 +2,7 @@ import random
 from logger import logger
 from messages import Messages
 from exceptions import InputError, InvalidValueError, DataNotSetError, OperationError, AppError
+# Используются пользовательские классы исключений
 
 
 # Генерирует массив случайных чисел
@@ -17,11 +18,12 @@ def generate_array(size: int, min_v: int = 0, max_v: int = 50) -> list[int]: # �
     Возвращает:
         :return: список случайных целых чисел длиной size.
     """
-
+    # raise - Чтобы информировать программу о проблеме и не продолжать выполнение функции с некорректными данными.
     # случайное целое число из промежутка min_v, max_v
     logger.info("Генерация случайного массива")
     if size <= 0:
         raise InvalidValueError("Размер массива должен быть положительным") # некорректные значения
+        # Программа сразу прерывает выполнение функции и переходит к ближайшему обработчику ошибок
     return [random.randint(min_v, max_v) for _ in range(size)]
 
 
